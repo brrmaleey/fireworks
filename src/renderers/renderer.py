@@ -2,12 +2,16 @@
 
 BACKGROUND = "#05070f"
 TEXT_COLOR = "#9aa4b8"
+PAUSE_COLOR = "#ff5a5f"
 ROCKET_COLOR = "#fff3c4"
 ROCKET_RADIUS = 2
 ROCKET_TAIL = 3          # длина хвоста ракеты: во сколько кадров её пути
 SPARK_RADIUS = 2
 
 HUD_FONT = ("Helvetica", 13)
+PAUSE_FONT = ("Helvetica", 28, "bold")
+HINT = ("Клик — взрыв    Пробел — пауза    "
+        "↑ ↓ — гравитация    ← → — частота ракет")
 
 
 def blend(color, background, amount):
@@ -28,7 +32,7 @@ def blend(color, background, amount):
 
 
 class Renderer:
-    """Рисует кадр: ракеты, искры и строку с информацией."""
+    """Рисует кадр: ракеты, искры, настройки и подсказку."""
 
     def __init__(self, canvas):
         """Запомнить холст, на котором будем рисовать."""
@@ -64,7 +68,16 @@ class Renderer:
                                 y + radius, fill=color, outline="")
 
     def draw_hud(self, model):
-        """Написать в углу, сколько сейчас искр."""
+        """Написать настройки сверху, подсказку снизу и «Пауза» в центре."""
         self.canvas.create_text(15, 15, anchor="w", fill=TEXT_COLOR,
                                 font=HUD_FONT,
-                                text=f"Искр: {len(model.sparks)}")
+                                text=f"Гравитация: {model.gravity:.2f}"
+                                     f"    Ракет в секунду: "
+                                     f"{model.launch_rate}"
+                                     f"    Искр: {len(model.sparks)}")
+        self.canvas.create_text(model.width / 2, model.height - 15,
+                                fill=TEXT_COLOR, font=HUD_FONT, text=HINT)
+        if model.paused:
+            self.canvas.create_text(model.width / 2, model.height / 2,
+                                    fill=PAUSE_COLOR, font=PAUSE_FONT,
+                                    text="Пауза")

@@ -21,8 +21,11 @@ SPARK_MAX_SPEED = 4
 SPARK_MIN_LIFE = 40      # время жизни искры в кадрах
 SPARK_MAX_LIFE = 80
 
-START_GRAVITY = 0.05     # гравитация искр
+START_GRAVITY = 0.05     # гравитация искр, её можно менять клавишами
+GRAVITY_STEP = 0.05
+MAX_GRAVITY = 0.3
 START_LAUNCH_RATE = 2    # сколько ракет в секунду запускается в среднем
+MAX_LAUNCH_RATE = 10
 
 
 class FireworksModel:
@@ -36,6 +39,7 @@ class FireworksModel:
         self.sparks = []
         self.gravity = START_GRAVITY
         self.launch_rate = START_LAUNCH_RATE
+        self.paused = False
 
     def launch(self):
         """Запустить ракету снизу экрана в случайном месте."""
@@ -63,7 +67,10 @@ class FireworksModel:
                                      math.sin(angle) * speed, color, life))
 
     def step(self):
-        """Сдвинуть всё на один кадр."""
+        """Сдвинуть всё на один кадр (на паузе ничего не меняется)."""
+        if self.paused:
+            return
+
         # launch_rate ракет в секунду — это launch_rate / FPS за кадр,
         # поэтому каждый кадр запускаем ракету с такой вероятностью.
         if random.random() < self.launch_rate / FPS:
@@ -79,3 +86,24 @@ class FireworksModel:
         # Взорвавшиеся ракеты и погасшие искры убираем из списков.
         self.rockets = [r for r in self.rockets if not r.is_at_top()]
         self.sparks = [s for s in self.sparks if s.is_alive()]
+
+    def change_gravity(self, direction):
+        """Усилить (direction = 1) или ослабить (direction = -1) гравитацию."""
+        gravity = self.gravity + direction * GRAVITY_STEP
+        gravity = max(0, min(MAX_GRAVITY, gravity))
+        # round убирает хвосты вроде 0.15000000000000002,
+        # которые появляются при сложении дробных чисел.
+        self.gravity = round(gravity, 2)
+
+    def change_launch_rate(self, direction):
+        """Запускать ракеты чаще (direction = 1) или реже (direction = -1).
+
+        При частоте 0 ракеты сами не взлетают, остаются только взрывы
+        по клику мыши.
+        """
+        self.launch_rate = max(0, min(MAX_LAUNCH_RATE,
+                                      self.launch_rate + direction))
+
+    def toggle_pause(self):
+        """Поставить анимацию на паузу или продолжить."""
+        self.paused = not self.paused
