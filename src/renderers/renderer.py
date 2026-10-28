@@ -1,5 +1,6 @@
 """Отрисовка фейерверков на холсте tkinter."""
 
+BACKGROUND = "#05070f"
 TEXT_COLOR = "#9aa4b8"
 ROCKET_COLOR = "#fff3c4"
 ROCKET_RADIUS = 2
@@ -7,6 +8,23 @@ ROCKET_TAIL = 3          # длина хвоста ракеты: во сколь
 SPARK_RADIUS = 2
 
 HUD_FONT = ("Helvetica", 13)
+
+
+def blend(color, background, amount):
+    """Смешать два цвета вида "#rrggbb".
+
+    amount = 1 даёт color, amount = 0 — background, между ними —
+    промежуточный цвет. В tkinter нет прозрачности, поэтому угасание
+    искры делаем так: чем меньше ей осталось жить, тем ближе её цвет
+    к цвету фона, и искра будто растворяется в небе.
+    """
+    result = "#"
+    # Цвет — три пары шестнадцатеричных цифр: красный, зелёный, синий.
+    for start in (1, 3, 5):
+        a = int(color[start:start + 2], 16)
+        b = int(background[start:start + 2], 16)
+        result += f"{round(b + (a - b) * amount):02x}"
+    return result
 
 
 class Renderer:
@@ -36,8 +54,9 @@ class Renderer:
         self.draw_dot(rocket.x, rocket.y, ROCKET_RADIUS, ROCKET_COLOR)
 
     def draw_spark(self, spark):
-        """Нарисовать искру."""
-        self.draw_dot(spark.x, spark.y, SPARK_RADIUS, spark.color)
+        """Нарисовать искру: чем меньше ей осталось жить, тем она тусклее."""
+        color = blend(spark.color, BACKGROUND, spark.brightness)
+        self.draw_dot(spark.x, spark.y, SPARK_RADIUS, color)
 
     def draw_dot(self, x, y, radius, color):
         """Нарисовать кружок радиуса radius с центром в (x, y)."""

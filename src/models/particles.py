@@ -1,6 +1,7 @@
 """Частицы фейерверка: ракета и искры."""
 
 DRAG = 0.98              # каждый кадр искра теряет 2 % скорости (воздух)
+FADE_FRAMES = 30         # за сколько кадров до смерти искра начинает гаснуть
 
 
 class Particle:
@@ -41,7 +42,6 @@ class Spark(Particle):
         """Создать искру, которая проживёт life кадров."""
         super().__init__(x, y, dx, dy, color)
         self.life = life         # сколько кадров осталось жить
-        self.max_life = life
 
     def move(self, gravity):
         """Сдвинуть искру на кадр и уменьшить оставшуюся жизнь."""
@@ -55,3 +55,12 @@ class Spark(Particle):
     def is_alive(self):
         """Жива ли ещё искра."""
         return self.life > 0
+
+    @property
+    def brightness(self):
+        """Яркость искры от 1 (горит) до 0 (погасла).
+
+        Искра горит в полную силу, а за последние FADE_FRAMES кадров
+        жизни плавно гаснет: например, за 15 кадров до конца — 15 / 30.
+        """
+        return min(1, self.life / FADE_FRAMES)

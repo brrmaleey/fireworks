@@ -3,11 +3,10 @@
 import tkinter as tk
 
 from src.models.fireworks_model import FPS, FireworksModel
-from src.renderers.renderer import Renderer
+from src.renderers.renderer import BACKGROUND, Renderer
 
 WIDTH = 800
 HEIGHT = 600
-BACKGROUND = "#05070f"
 FRAME_DELAY_MS = 1000 // FPS     # 16 мс, примерно 60 кадров в секунду
 
 
